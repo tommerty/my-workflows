@@ -1,0 +1,56 @@
+# This is how I parse data from multiple files in a dir to be rendered on another, such as a README. This includes placing them inside a <details> element, so it creates them in a dropdown.
+# I use this for my /years path, where I have markdown files labelled in years like 2023.md. This takes each of these files and renders them in dropdowns on a repo's README page so you don't need to go digging through the directories.
+# You will need to adjust this to suit your needs
+name: File to file
+
+on:
+  push:
+    paths:
+      - 'years/*.md'
+      - ".github/workflows/year-to-readme.yml"
+  workflow_dispatch:
+
+jobs:
+  update-readme:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4.1.7
+        with:
+          token: ${{ secrets.PAT }}
+
+      - name: Parse year files and create temporary content file
+        run: |
+          year_files=$(ls years/*.md | sort)
+          content=""
+          for file in $year_files; do
+            year=$(basename "$file" .md)
+            content+="<details>
+            
+            <summary>$year</summary>
+            
+            <!-- $year content -->
+            
+            $(cat $file)
+            
+            <!-- end $year content -->
+            
+            </details>
+            "
+          done
+          echo "$content" > temp_content.txt
+
+      - name: Update README.md
+        run: |
+          readme_content=$(cat README.md)
+          updated_readme=$(echo "$readme_content" | sed '/<!-- START YEAR PARSER -->/,/<!-- END YEAR PARSER -->/{//!d}' | tr -d '\r')
+          echo "$updated_readme" > README.md
+          sed -i '/<!-- START YEAR PARSER -->/r temp_content.txt' README.md
+
+      - name: Commit changes
+        run: |
+          git config --global user.name 'Tommerty'
+          git config --global user.email 'tommerty@github.com'
+          git add README.md
+          git commit -m 'Update README with yearly breakdown and content'
+          git push
