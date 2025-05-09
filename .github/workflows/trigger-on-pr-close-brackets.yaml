@@ -1,4 +1,4 @@
-name: Trigger on Pull Request Closed
+name: Trigger on Pull Request Closed Brackets
 
 on:
   pull_request:
