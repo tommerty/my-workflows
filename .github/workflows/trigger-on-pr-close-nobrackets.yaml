@@ -3,7 +3,7 @@ name: Trigger on Pull Request Closed
 on:
   pull_request:
     types:
-      [closed]
+      - closed
 
 jobs:
   on-pr-closed:

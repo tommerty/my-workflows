@@ -1,0 +1,16 @@
+name: Trigger on Pull Request Closed Brackets
+
+on:
+  pull_request:
+    types:
+      [closed]
+
+jobs:
+  on-pr-closed:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Perform action on PR closed
+        run: echo "Pull request has been closed!"
